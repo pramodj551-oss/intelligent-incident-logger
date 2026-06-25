@@ -1,0 +1,288 @@
+AP SECURITAS PVT. LTD.
+STANDARD OPERATING PROCEDURES MANUAL — PHYSICAL SECURITY
+Version 2.1 | Issued: January 2024
+Location: Godrej IT Park, Eastern Express Highway, Thane (W) — 400 063
+
+====================================================================
+SECTION 1: GENERAL PRINCIPLES
+====================================================================
+
+All security personnel must adhere to these protocols immediately upon
+observing an incident. Chain of command: Guard → Shift Supervisor →
+Control Room → Senior Security Manager → Client Liaison Officer.
+
+Emergency Contact Numbers:
+- Control Room (24x7):       022-XXXX-0001
+- Bomb Detection Squad:      022-XXXX-0002
+- Thane Fire Brigade:        101
+- Thane Police:              100
+- Medical Emergency:         102 / 108
+- AP Securitas HQ:           1800-XXX-XXXX
+
+Golden Rule: DO NOT TOUCH, DO NOT MOVE any suspicious object.
+            Secure the area FIRST. Report SECOND. Assist THIRD.
+
+====================================================================
+
+Protocol 101: UNATTENDED OR SUSPICIOUS OBJECT
+====================================================================
+
+APPLICABLE WHEN: Any bag, package, box, vehicle or object is left
+unattended without an identifiable owner for more than 5 minutes in
+a sensitive area, OR if an object appears tampered, has unusual wires,
+makes sounds, emits smell, or is at an unexpected location.
+
+THREAT LEVEL: HIGH
+
+IMMEDIATE ACTIONS (Execute in this exact order):
+1. Do NOT touch, kick, move, or cover the suspicious object.
+2. Clear the area — maintain a minimum 50-metre safety perimeter.
+   Do not allow anyone to approach. Use cones/barriers if available.
+3. Do NOT use mobile phones or radios within 15 metres of the object
+   (radio frequencies can trigger certain detonators).
+4. Notify Control Room immediately: state your name, exact location,
+   description of object, time first seen, and current perimeter status.
+5. Control Room will contact Bomb Detection Squad (BDS).
+   Expected response time: 15–30 minutes from notification.
+6. Keep the area clear — do not re-enter even if requested.
+7. Provide a written Incident Report within 30 minutes of clearance.
+8. Preserve CCTV footage of the area from 1 hour before discovery.
+
+KEY PHRASE FOR RADIO REPORT:
+"Code Silver — [Location] — Unattended object — Perimeter secured —
+Requesting BDS dispatch — Time: [HH:MM]"
+
+DO NOT:
+- Do not attempt to identify or examine the object yourself.
+- Do not cut any wires or strings attached to the object.
+- Do not allow media or unauthorized persons near the perimeter.
+- Do not clear Code Silver status without BDS confirmation.
+
+====================================================================
+
+Protocol 102: FIRE, SMOKE, OR EXPLOSION
+====================================================================
+
+APPLICABLE WHEN: Smoke is visually detected, fire alarm sounds,
+smell of burning, visible flames, or an explosion is heard/felt.
+
+THREAT LEVEL: HIGH
+
+IMMEDIATE ACTIONS:
+1. Activate the nearest fire alarm pull station (red break-glass unit).
+2. Call Control Room: "Code Red — [Exact Location/Floor/Block] — Fire
+   confirmed/suspected — Evacuation initiated."
+3. Initiate building evacuation via public address system if available.
+   Shout "FIRE — Please evacuate immediately — Use stairways — Do not
+   use lifts" repeatedly along corridors.
+4. Guide occupants to nearest assembly point:
+   Block A/B → Assembly Point Alpha (North Parking)
+   Block C/D → Assembly Point Beta (South Garden)
+5. Do NOT use elevators during evacuation.
+6. Perform a headcount at assembly point. Notify supervisor of any
+   missing persons immediately.
+7. Do not re-enter the building until Fire Brigade gives all-clear.
+8. Fire Brigade contact: 101. Expected response: 8–12 minutes.
+
+FIRE EXTINGUISHER GUIDE (for small contained fires only):
+- Red (Water): Paper, wood, textile
+- Black (CO2): Electrical equipment, server rooms
+- Cream (Foam): Flammable liquids
+- Blue (Powder): Multi-purpose
+
+DO NOT attempt to fight a fire that is larger than a waste bin.
+Evacuate first; extinguish only if fire is small and exit is clear.
+
+====================================================================
+
+Protocol 103: MEDICAL EMERGENCY
+====================================================================
+
+APPLICABLE WHEN: Person is unconscious, unresponsive, having a
+seizure, cardiac event (chest pain, arm pain), difficulty breathing,
+severe bleeding, or any life-threatening condition.
+
+THREAT LEVEL: HIGH
+
+IMMEDIATE ACTIONS:
+1. Do NOT move the person unless they are in immediate danger.
+2. Call 108 (Emergency Medical Services) immediately.
+   State: location, number of casualties, nature of injury.
+3. Notify Control Room: "Code Blue — [Location] — Medical emergency —
+   EMS contacted — Requesting First Aid kit and AED."
+4. If trained: Begin CPR if person is unresponsive and not breathing.
+   AED locations: Main Lobby Level 1, Cafeteria Level 2, Block C Lobby.
+5. Clear the area — give the person space and airflow.
+6. Assign one guard to direct EMS to the exact location at building
+   entrance. Do not leave the casualty unattended.
+7. Do not give food, water, or medication to the casualty.
+8. Preserve scene for medical investigation.
+
+====================================================================
+
+Protocol 104: UNAUTHORIZED ACCESS / INTRUDER
+====================================================================
+
+APPLICABLE WHEN: Person is found in a restricted area without valid
+access credentials, or has forcibly entered (broken door/window), or
+has evaded access control.
+
+THREAT LEVEL: HIGH (armed) / MEDIUM (unarmed)
+
+IMMEDIATE ACTIONS:
+1. Do NOT physically confront an armed or violent intruder.
+   Maintain safe distance. Observe and report.
+2. Notify Control Room: "Code Orange — [Location] — Unauthorized
+   individual — Description: [height/build/clothing/direction of travel]"
+3. Control Room will alert Thane Police (100) if required.
+4. If intruder is unarmed and cooperative: politely challenge,
+   request ID, and escort to reception for verification.
+5. If intruder is uncooperative: do not block exit; maintain visual
+   contact; relay real-time movement to Control Room.
+6. Secure adjacent access points — lock down nearest server rooms
+   and asset-holding areas immediately.
+7. Review access logs and CCTV. Preserve footage.
+8. File an Incident Report with full physical description and timeline.
+
+DESCRIPTION TEMPLATE (radio):
+"Male/Female — Approximate age — Height — Build — Clothing colour
+and type — Hair — Any distinguishing features — Last seen at [location]
+heading [direction] — Time: [HH:MM]"
+
+====================================================================
+
+Protocol 105: ROBBERY OR VIOLENT CRIME
+====================================================================
+
+APPLICABLE WHEN: Theft with threat/force, assault, or any crime
+involving violence or threat of violence on premises.
+
+THREAT LEVEL: HIGH
+
+IMMEDIATE ACTIONS:
+1. GUARD SAFETY IS THE TOP PRIORITY — Do not resist if weapon is shown.
+   Comply with robber's demands. Note every detail for later reporting.
+2. Press the silent panic alarm button at your post (if available).
+3. Once safe: immediately call Control Room and Police (100).
+   State: "Code Red — Armed incident — [Location] — [Direction
+   criminal fled] — Physical description — Weapon description."
+4. Do not pursue the criminal.
+5. Secure and preserve crime scene — do not allow anyone to touch
+   or move anything.
+6. Detain any witnesses present; take contact details.
+7. Inform HR and Senior Security Manager within 15 minutes.
+8. Provide a detailed written statement within 1 hour.
+
+====================================================================
+
+Protocol 106: BOMB THREAT (Telephone or Written)
+====================================================================
+
+APPLICABLE WHEN: Any call, email, message, or note threatening an
+explosive device on the premises.
+
+THREAT LEVEL: HIGH
+
+IF RECEIVING A BOMB THREAT CALL:
+1. Stay calm. Keep the caller talking as long as possible.
+2. Use the Bomb Threat Checklist (posted at all reception desks).
+   Note: exact words used, voice description, background sounds,
+   time of call, number called from, any accent/speech pattern.
+3. Do NOT hang up — signal a colleague to call police on another line.
+4. Immediately notify Control Room and Senior Security Manager.
+5. Control Room will decide whether to evacuate based on threat
+   credibility assessment.
+6. If evacuation ordered: Follow Protocol 102 evacuation procedure.
+7. Do NOT re-enter building until Police/BDS gives all-clear.
+
+====================================================================
+
+Protocol 107: SUSPICIOUS VEHICLE
+====================================================================
+
+APPLICABLE WHEN: A vehicle is parked in a restricted/no-parking
+zone for more than 30 minutes without authorization, appears
+abandoned, has suspicious contents visible, or its occupants
+are behaving suspiciously.
+
+THREAT LEVEL: MEDIUM (abandoned vehicle = HIGH if suspicious contents)
+
+IMMEDIATE ACTIONS:
+1. Note full vehicle details: make, model, colour, registration number,
+   number of occupants, and time first observed.
+2. Attempt to locate owner via reception/parking management.
+3. If owner not found within 30 minutes: notify Control Room.
+4. If vehicle appears abandoned with unusual contents or wires visible:
+   Treat as Protocol 101 (Suspicious Object). Clear 50m perimeter.
+5. Do NOT attempt to open/enter the vehicle.
+6. Preserve CCTV footage of vehicle entry into campus.
+
+====================================================================
+
+Protocol 108: SUSPECTED THEFT / MISSING PROPERTY
+====================================================================
+
+APPLICABLE WHEN: Employee reports property stolen from their desk,
+common area, or vehicle; or valuable assets are found missing during
+audit.
+
+THREAT LEVEL: LOW (missing property) / MEDIUM (confirmed theft)
+
+IMMEDIATE ACTIONS:
+1. Take a detailed statement from the reporting person:
+   - What was stolen / lost
+   - Last known location and time
+   - Estimated value
+   - Any suspects or witnesses
+2. Review CCTV footage for the relevant area and time window.
+3. Do not disturb the area until CCTV review is complete.
+4. Notify Security Supervisor and Client HR within 1 hour.
+5. If high-value asset (laptop, mobile, server equipment): log with
+   police (FIR may be required by client policy).
+6. Fill Incident Report Form IT-SEC-04 and submit to Control Room.
+
+====================================================================
+
+Protocol 109: MISSING PERSON ON PREMISES
+====================================================================
+
+APPLICABLE WHEN: An employee, visitor, or contractor is reported
+missing on campus and cannot be located.
+
+THREAT LEVEL: MEDIUM
+
+IMMEDIATE ACTIONS:
+1. Confirm last-seen location and time from reporting person.
+2. Check access control logs for all exits — verify if person has
+   left campus.
+3. Conduct a systematic search of common areas, washrooms, and
+   stairwells with at least two guards.
+4. Notify Control Room and Senior Security Manager immediately.
+5. If person is not located within 20 minutes: call Police (100).
+6. Do NOT share personal information of missing person with media.
+
+====================================================================
+
+Protocol 110: NATURAL DISASTER / EMERGENCY EVACUATION
+====================================================================
+
+APPLICABLE WHEN: Earthquake, flood, severe storm causing structural
+damage, or any event requiring full campus evacuation.
+
+THREAT LEVEL: HIGH
+
+IMMEDIATE ACTIONS:
+1. EARTHQUAKE: Instruct everyone to Drop, Cover, and Hold On.
+   Do NOT evacuate during shaking — wait for shaking to stop.
+   After shaking stops: orderly evacuation following Protocol 102 routes.
+2. FLOOD/STORM: Move occupants to upper floors. Block ground-level
+   access points. Notify BMC Disaster Management (1916).
+3. All emergencies: Take visitor register and employee roll call list.
+4. Account for all persons at assembly point.
+5. Notify AP Securitas Emergency Coordinator.
+6. Remain at assembly point until authority gives all-clear.
+
+====================================================================
+END OF STANDARD OPERATING PROCEDURES MANUAL
+For queries: soc@apsecuritas.in | Emergency Hotline: 1800-XXX-XXXX
+====================================================================
