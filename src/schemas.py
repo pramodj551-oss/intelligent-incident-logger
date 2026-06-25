@@ -10,7 +10,34 @@ at call time and retries automatically on validation failure.
 
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    DateTime,
+    Boolean
+)
 
+class IncidentLog(Base):
+    __tablename__ = "incident_logs"
+
+    id = Column(Integer, primary_key=True)
+
+    incident_id = Column(String)
+
+    timestamp = Column(DateTime)
+
+    location = Column(String)
+
+    object_involved = Column(String)
+
+    threat_level = Column(String)
+
+    protocol_number = Column(String)
+
+    status = Column(String)
+
+    requires_immediate_action = Column(Boolean)
 
 class IncidentReport(BaseModel):
     """
