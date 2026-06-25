@@ -31,9 +31,21 @@ class SOPRetriever:
     Manages the SOP knowledge base using ChromaDB + OpenAI embeddings.
     Provides semantic search to match live incidents with the right protocol.
     """
-
-    def __init__(self, sop_file_path: str, openai_api_key: str):
-        """
+    
+    embedding_mode = os.getenv("EMBEDDING_MODE", "local").lower()
+        
+        if embedding_mode == "openai":
+            print("[RAG] Using OpenAI Embeddings (text-embedding-3-small)")
+            self._embedding_fn = OpenAIEmbeddingFunction(
+                api_key=openai_api_key,
+                model_name="text-embedding-3-small"
+            )
+        else:
+            print("[RAG] Using Local Embeddings (all-MiniLM-L6-v2)")
+            from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+            self._embedding_fn = SentenceTransformerEmbeddingFunction(
+                model_name="all-MiniLM-L6-v2"
+    """
         Args:
             sop_file_path: Path to SOP_Manual.txt
             openai_api_key: OpenAI API key for text-embedding-3-small
