@@ -60,6 +60,10 @@ class IncidentReport(BaseModel):
     action_taken: Optional[str] = Field(
         default="No action taken yet",
         description="Any immediate action already taken by the guard before submitting this report."
+        confidence_score: float = Field(
+        description="LLM cha threat level classification varil aatpmajavishwas (0.0 te 1.0 chya darmiyan)",
+        ge=0.0,
+        le=1.0
     )
 
 
