@@ -27,6 +27,9 @@ from langgraph.graph import StateGraph, END, START
 
 from src.schemas import IncidentReport, AgentResponse
 from src.rag_pipeline import SOPRetriever
+import uuid
+
+incident_id = str(uuid.uuid4())
 
 
 # ── Configurable model ────────────────────────────────────────────────────────
@@ -199,6 +202,20 @@ class IncidentAgent:
             protocol_number=protocol_number
         )
         return {**state, "final_response": final.model_dump()}
+        db_record = IncidentLog(
+    incident_id=incident_id,
+    location=report.location,
+    object_involved=report.object_involved,
+    threat_level=report.threat_level,
+    protocol_number=protocol_number,
+    status="OPEN",
+    requires_immediate_action=(
+        report.threat_level == "High"
+    )
+)
+
+db.add(db_record)
+db.commit()
 
     # ── Graph Builder ─────────────────────────────────────────────────────────
 
