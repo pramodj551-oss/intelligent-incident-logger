@@ -1,1 +1,0 @@
-# intelligent-incident-logger
