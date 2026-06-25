@@ -27,6 +27,12 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
+from backend.database import get_db, IncidentLog  
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 load_dotenv()
 
@@ -129,7 +135,31 @@ def health_check():
 
 
 @app.post("/report", tags=["Incident Processing"])
-def process_report(req: ReportRequest):
+def process_report(req: ReportRequest, current_user: str = Depends(verify_token), db: Session = Depends(get_db)):
+    if not _agent:
+        raise HTTPException(status_code=503, detail="Agent not initialised.")
+    if not req.guard_input.strip():
+        raise HTTPException(status_code=422, detail="guard_input cannot be empty.")
+
+    try:
+        result = _agent.process(guard_input=req.guard_input, guard_name=req.guard_name)
+        
+        report_data = result["incident_report"]
+        db_log = IncidentLog(
+            location=report_data.get("location"),
+            object_involved=report_data.get("object_involved"),
+            threat_level=report_data.get("threat_level"),
+            confidence_score=str(report_data.get("confidence_score", 0.0)),
+            protocol_number=result.get("protocol_number"),
+            requires_immediate_action=result.get("requires_immediate_action", False)
+        )
+        db.add(db_log)
+        db.commit()
+        
+        return {"status": "success", "data": result}
+
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Agent error: {str(exc)}")
     """
     Main endpoint: run the full LangGraph agent pipeline on a guard report.
 
@@ -137,29 +167,6 @@ def process_report(req: ReportRequest):
     - If threat is HIGH, retrieves relevant SOP from ChromaDB
     - Returns structured AgentResponse with action guidance
     """
-    if not _agent:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Agent not initialised."
-        )
-    if not req.guard_input.strip():
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="guard_input cannot be empty."
-        )
-
-    try:
-        result = _agent.process(
-            guard_input=req.guard_input,
-            guard_name=req.guard_name
-        )
-        return {"status": "success", "data": result}
-
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Agent error: {str(exc)}"
-        )
 
 
 @app.post("/chat", tags=["Incident Processing"])
