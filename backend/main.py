@@ -138,8 +138,12 @@ def health_check():
     )
 
 
-@app.post("/report", tags=["Incident Processing"])
-def process_report(req: ReportRequest, current_user: str = Depends(verify_token), db: Session = Depends(get_db)):
+@app.post("/report")
+def process_report(
+    req: ReportRequest,
+    token: str = Depends(oauth2_scheme)
+):
+    pass
     if not _agent:
         raise HTTPException(status_code=503, detail="Agent not initialised.")
     if not req.guard_input.strip():
