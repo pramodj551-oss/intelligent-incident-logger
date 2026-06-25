@@ -121,6 +121,11 @@ class IncidentAgent:
     # ── Conditional Edge: Route by Threat Level ───────────────────────────────
 
     def _route_by_threat(self, state: AgentState) -> str:
+        threat = (state.get("incident_report") or {}).get("threat_level", "Low")
+        
+        if threat in ["High", "Medium"]:
+            return "retrieve_sop"
+        return "generate_response"
         """
         Conditional edge function.
         Returns node name based on extracted threat_level.
