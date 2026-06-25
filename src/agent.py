@@ -36,6 +36,7 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
 EXTRACT_SYSTEM_PROMPT = """You are an AI Security Operations Center (SOC) analyst for AP Securitas Pvt. Ltd.
 Your task is to extract structured incident data from free-form security guard reports.
+Always estimate a confidence_score between 0.0 and 1.0 based on how clear and specific the guard's input is.
 
 Extraction rules:
 - Guards may write in English, Marathi, Hindi, or a mix (Hinglish). Extract correctly regardless of language.
