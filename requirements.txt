@@ -1,25 +1,26 @@
-# ── Core AI ────────────────────────────────────────────────────────────────────
-openai>=1.40.0           # OpenAI SDK (LLM + embeddings)
-instructor>=1.4.0        # Pydantic Structured Outputs via OpenAI
+# -- LLM Providers ------------------------------------------------------------
+groq>=0.11.0             # Groq Cloud (FREE, default) -- get key at console.groq.com
+openai>=1.40.0           # OpenAI (optional, set LLM_PROVIDER=openai)
+instructor>=1.4.0        # Pydantic structured outputs (works with both Groq + OpenAI)
 
-# ── Agent Framework ────────────────────────────────────────────────────────────
+# -- Agent Framework ----------------------------------------------------------
 langgraph>=0.2.0         # LangGraph state-machine orchestration
 
-# -- Vector Store & RAG --------------------------------------------------------
-chromadb>=0.5.0                  # Persistent vector store
-langchain-text-splitters>=0.2.0  # Text chunking for SOP manual
+# -- Vector Store & RAG -------------------------------------------------------
+chromadb>=0.5.0          # Persistent vector store
+langchain-text-splitters>=0.2.0
 
 # Optional: only needed if EMBEDDING_MODE=local (free, no API cost)
-# sentence-transformers>=2.7.0  # Uncomment to enable local embeddings
+# sentence-transformers>=2.7.0
 
-# ── API Backend ────────────────────────────────────────────────────────────────
+# -- API Backend --------------------------------------------------------------
 fastapi>=0.111.0
 uvicorn[standard]>=0.30.0
-httpx>=0.27.0            # Async HTTP client (Streamlit → FastAPI calls)
+httpx>=0.27.0
 
-# ── Frontend ───────────────────────────────────────────────────────────────────
+# -- Frontend -----------------------------------------------------------------
 streamlit>=1.35.0
 
-# ── Utilities ──────────────────────────────────────────────────────────────────
+# -- Utilities ----------------------------------------------------------------
 pydantic>=2.7.0
 python-dotenv>=1.0.0
