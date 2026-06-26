@@ -1,0 +1,25 @@
+# ── Core AI ────────────────────────────────────────────────────────────────────
+openai>=1.40.0           # OpenAI SDK (LLM + embeddings)
+instructor>=1.4.0        # Pydantic Structured Outputs via OpenAI
+
+# ── Agent Framework ────────────────────────────────────────────────────────────
+langgraph>=0.2.0         # LangGraph state-machine orchestration
+
+# -- Vector Store & RAG --------------------------------------------------------
+chromadb>=0.5.0                  # Persistent vector store
+langchain-text-splitters>=0.2.0  # Text chunking for SOP manual
+
+# Optional: only needed if EMBEDDING_MODE=local (free, no API cost)
+# sentence-transformers>=2.7.0  # Uncomment to enable local embeddings
+
+# ── API Backend ────────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+httpx>=0.27.0            # Async HTTP client (Streamlit → FastAPI calls)
+
+# ── Frontend ───────────────────────────────────────────────────────────────────
+streamlit>=1.35.0
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+pydantic>=2.7.0
+python-dotenv>=1.0.0
