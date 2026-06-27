@@ -2,9 +2,11 @@
 """
 backend/main.py -- FastAPI REST API
 ====================================
-Reads LLM_PROVIDER to pick the right API key automatically:
-  LLM_PROVIDER=groq   -> reads GROQ_API_KEY   (free, default)
-  LLM_PROVIDER=openai -> reads OPENAI_API_KEY
+Provider is resolved entirely from .env via get_provider_from_env().
+No provider-specific code lives here.
+
+Dev  (.env):  LLM_PROVIDER=groq   + GROQ_API_KEY
+Prod (.env):  LLM_PROVIDER=openai + OPENAI_API_KEY
 
 Run:
     uvicorn backend.main:app --reload --port 8000
@@ -17,24 +19,28 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from typing import Optional
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Depends, Security, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
 
+from src.providers import get_provider_from_env, list_providers
 from src.agent import IncidentAgent
 from src.rag_pipeline import SOPRetriever
 
 
+# -- App ----------------------------------------------------------------------
+
 app = FastAPI(
     title="AP Securitas -- Intelligent Incident Logger API",
     description=(
-        "Powered by Groq (free) or OpenAI. "
-        "Set LLM_PROVIDER=groq and GROQ_API_KEY in .env for zero-cost operation."
+        "Multi-provider AI triage engine. "
+        "Switch LLM via .env: LLM_PROVIDER=groq|openai|huggingface"
     ),
-    version="1.1.0"
+    version="2.0.0"
 )
 
 app.add_middleware(
@@ -44,74 +50,87 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-_agent:    Optional[IncidentAgent] = None
-_retriever: Optional[SOPRetriever] = None
+
+# -- Optional API key auth (disabled when DISABLE_AUTH_FOR_DEMO=true) ---------
+
+_DEMO_MODE = os.getenv("DISABLE_AUTH_FOR_DEMO", "false").lower() == "true"
+_API_KEY   = os.getenv("APP_API_KEY", "")
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+def verify_api_key(key: Optional[str] = Security(api_key_header)):
+    """Pass-through in demo mode; enforce key in production."""
+    if _DEMO_MODE:
+        return          # no auth required
+    if not _API_KEY:
+        return          # APP_API_KEY not set -> open access
+    if key != _API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing X-API-Key header."
+        )
+
+
+# -- Global singletons --------------------------------------------------------
+
+_agent:     Optional[IncidentAgent] = None
+_retriever: Optional[SOPRetriever]  = None
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup():
     global _agent, _retriever
 
-    llm_provider   = os.getenv("LLM_PROVIDER", "groq")
-    embedding_mode = os.getenv("EMBEDDING_MODE", "openai")
-
-    # -- Pick LLM key based on provider ---------------------------------------
-    if llm_provider == "groq":
-        llm_key = os.getenv("GROQ_API_KEY", "")
-        if not llm_key:
-            raise RuntimeError(
-                "GROQ_API_KEY is not set. "
-                "Get a free key at console.groq.com, then add it to .env"
-            )
-    else:
-        llm_key = os.getenv("OPENAI_API_KEY", "")
-        if not llm_key:
-            raise RuntimeError("OPENAI_API_KEY is not set.")
-
-    # -- Pick embedding key (only needed for openai embedding mode) -----------
-    embed_key = os.getenv("OPENAI_API_KEY", "") if embedding_mode == "openai" else ""
+    embed_mode = os.getenv("EMBEDDING_MODE", "local")
+    embed_key  = os.getenv("OPENAI_API_KEY", "") if embed_mode == "openai" else ""
 
     sop_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
         "data", "sop_manual.txt"
     )
 
-    print(f"[API] LLM provider : {llm_provider}")
-    print(f"[API] Embedding    : {embedding_mode}")
+    # Provider resolved from .env -- no provider code here
+    provider = get_provider_from_env()
 
     _retriever = SOPRetriever(sop_path, openai_api_key=embed_key)
-    _agent     = IncidentAgent(api_key=llm_key, sop_retriever=_retriever)
-    print("[API] Agent ready.")
+    _agent     = IncidentAgent(sop_retriever=_retriever, provider=provider)
+    print("[API] Ready.")
 
+
+# -- Models -------------------------------------------------------------------
 
 class ReportRequest(BaseModel):
     guard_input: str = Field(
         ...,
+        min_length=5,
         example="Gate 2 par ek suspicious black bag mili hai jo pichhle 20 minute se koi nahi le gaya."
     )
     guard_name: Optional[str] = Field(default="Unknown Guard")
 
 
+# -- Endpoints ----------------------------------------------------------------
+
 @app.get("/health")
-def health_check():
+def health(_=Depends(verify_api_key)):
     if not _agent:
         raise HTTPException(503, "Agent not initialised.")
     kb = _retriever.get_stats()
     return {
-        "status":          "healthy",
-        "llm_provider":    os.getenv("LLM_PROVIDER", "groq"),
-        "llm_model":       _agent._model,
-        "embedding_mode":  os.getenv("EMBEDDING_MODE", "openai"),
-        "kb_chunks":       kb["total_chunks"],
+        "status":         "healthy",
+        "llm_provider":   _agent._provider.provider_name,
+        "llm_model":      _agent._model,
+        "embedding_mode": os.getenv("EMBEDDING_MODE", "local"),
+        "kb_chunks":      kb["total_chunks"],
+        "demo_mode":      _DEMO_MODE,
+        "available_providers": list_providers(),
     }
 
 
 @app.post("/report")
-def process_report(req: ReportRequest):
+def process_report(req: ReportRequest, _=Depends(verify_api_key)):
+    """Full triage pipeline: extract -> [retrieve SOP] -> respond."""
     if not _agent:
         raise HTTPException(503, "Agent not initialised.")
-    if not req.guard_input.strip():
-        raise HTTPException(422, "guard_input cannot be empty.")
     try:
         result = _agent.process(req.guard_input, req.guard_name)
         return {"status": "success", "data": result}
@@ -120,12 +139,19 @@ def process_report(req: ReportRequest):
 
 
 @app.post("/chat")
-def chat(req: ReportRequest):
+def chat(req: ReportRequest, _=Depends(verify_api_key)):
+    """Alias for /report."""
     return process_report(req)
 
 
+@app.get("/providers")
+def providers():
+    """List all registered provider names."""
+    return {"providers": list_providers(), "active": os.getenv("LLM_PROVIDER", "groq")}
+
+
 @app.get("/kb/stats")
-def kb_stats():
+def kb_stats(_=Depends(verify_api_key)):
     if not _retriever:
         raise HTTPException(503, "Retriever not initialised.")
     return _retriever.get_stats()
