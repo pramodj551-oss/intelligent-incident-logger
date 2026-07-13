@@ -84,15 +84,11 @@ async def startup():
     embed_mode = os.getenv("EMBEDDING_MODE", "local")
     embed_key  = os.getenv("OPENAI_API_KEY", "") if embed_mode == "openai" else ""
 
-    sop_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "data", "sop_manual.txt"
-    )
-
     # Provider resolved from .env -- no provider code here
     provider = get_provider_from_env()
 
-    _retriever = SOPRetriever(sop_path, openai_api_key=embed_key)
+    # sop_file_path omitted -- SOPRetriever auto-resolves via _resolve_sop_path()
+    _retriever = SOPRetriever(openai_api_key=embed_key)
     _agent     = IncidentAgent(sop_retriever=_retriever, provider=provider)
     print("[API] Ready.")
 

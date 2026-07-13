@@ -109,19 +109,17 @@ def ts() -> str:
 def get_agent(provider_name: str, api_key: str, embed_mode: str, embed_key: str = ""):
     """
     Cache key = (provider_name, api_key, embed_mode, embed_key).
-    Re-initialises only when any of these change.
+    sop_file_path intentionally omitted -- SOPRetriever auto-resolves it
+    via _resolve_sop_path() anchored to rag_pipeline.py, reliable on
+    local dev, Streamlit Cloud, and Docker.
     """
     from src.providers import get_provider
     from src.rag_pipeline import SOPRetriever
     from src.agent import IncidentAgent
 
     provider = get_provider(provider_name, api_key)
-    sop_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "data", "sop_manual.txt"
-    )
     os.environ["EMBEDDING_MODE"] = embed_mode
-    retriever = SOPRetriever(sop_path, openai_api_key=embed_key)
+    retriever = SOPRetriever(openai_api_key=embed_key)   # path auto-resolved
     return IncidentAgent(sop_retriever=retriever, provider=provider)
 
 
