@@ -1,16 +1,11 @@
+# -*- coding: utf-8 -*-
 """
-frontend/app.py — Streamlit SOC Dashboard UI
-=============================================
-Module 1 & 3: Frontend Deployment
-
-Dark-themed Security Operations Dashboard for AP Securitas.
-Guards enter incident reports in natural language (any language).
-The AI agent returns structured data + SOP guidance instantly.
-
-Run:
-    cd incident-logger
-    streamlit run frontend/app.py
+frontend/app.py -- Streamlit SOC Dashboard
+Provider switcher: Groq (free) | OpenAI | Hugging Face
+Embedding switcher: Local (free) | OpenAI
 """
+
+from __future__ import annotations
 
 import os
 import sys
@@ -19,12 +14,9 @@ from datetime import datetime
 from typing import Optional
 
 import streamlit as st
-import httpx
 
-# Allow importing from project root
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# ── Page Config (MUST be first Streamlit call) ────────────────────────────────
 st.set_page_config(
     page_title="AP Securitas | AI Incident Logger",
     page_icon="🚨",
@@ -32,355 +24,347 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-
-# ── Custom CSS — Dark SOC Theme ───────────────────────────────────────────────
 st.markdown("""
 <style>
-    /* ── Base ── */
-    .stApp { background: #0d1117; color: #c9d1d9; }
-    section[data-testid="stSidebar"] { background: #161b22; border-right: 1px solid #30363d; }
-
-    /* ── Typography ── */
-    h1, h2, h3, h4 { color: #f0f6fc; }
-    .stTextArea textarea { background: #161b22 !important; color: #c9d1d9 !important;
-        border: 1px solid #30363d !important; font-family: 'Courier New', monospace; }
-    .stTextInput input { background: #161b22 !important; color: #c9d1d9 !important;
-        border: 1px solid #30363d !important; }
-
-    /* ── Buttons ── */
+    .stApp { background:#0d1117; color:#c9d1d9; }
+    section[data-testid="stSidebar"] { background:#161b22; border-right:1px solid #30363d; }
+    h1,h2,h3,h4 { color:#f0f6fc; }
+    .stTextArea textarea { background:#161b22 !important; color:#c9d1d9 !important;
+        border:1px solid #30363d !important; font-family:'Courier New',monospace; }
+    .stTextInput input { background:#161b22 !important; color:#c9d1d9 !important;
+        border:1px solid #30363d !important; }
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #c0392b, #e74c3c);
-        color: white; border: none; border-radius: 6px;
-        padding: 0.6rem 2rem; font-weight: 700; font-size: 1rem;
-        letter-spacing: 0.04em; transition: all 0.2s;
-    }
-    .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        transform: translateY(-1px); box-shadow: 0 4px 12px rgba(231,76,60,0.4);
-    }
-
-    /* ── Threat Badges ── */
-    .badge-high   { background:#c0392b; color:#fff; padding:4px 14px; border-radius:20px;
-                    font-weight:700; font-size:0.9rem; letter-spacing:0.08em; }
-    .badge-medium { background:#d68910; color:#fff; padding:4px 14px; border-radius:20px;
-                    font-weight:700; font-size:0.9rem; letter-spacing:0.08em; }
-    .badge-low    { background:#1e8449; color:#fff; padding:4px 14px; border-radius:20px;
-                    font-weight:700; font-size:0.9rem; letter-spacing:0.08em; }
-
-    /* ── Alert Box ── */
-    .alert-box { background:#161b22; border-left:4px solid #e74c3c;
-                 padding:1rem 1.2rem; border-radius:6px; margin:0.8rem 0; }
-    .alert-box-medium { background:#161b22; border-left:4px solid #d68910;
-                        padding:1rem 1.2rem; border-radius:6px; margin:0.8rem 0; }
-    .alert-box-low    { background:#161b22; border-left:4px solid #1e8449;
-                        padding:1rem 1.2rem; border-radius:6px; margin:0.8rem 0; }
-
-    /* ── Info Cards ── */
-    .info-card { background:#161b22; border:1px solid #30363d; border-radius:8px;
-                 padding:1rem; margin:0.5rem 0; }
-    .field-label { color:#8b949e; font-size:0.8rem; font-weight:600;
-                   text-transform:uppercase; letter-spacing:0.08em; margin-bottom:2px; }
-    .field-value { color:#f0f6fc; font-size:1rem; }
-
-    /* ── SOP Panel ── */
-    .sop-panel { background:#0d1f12; border:1px solid #2ea043;
-                 border-radius:8px; padding:1.2rem; font-size:0.88rem;
-                 font-family:'Courier New', monospace; color:#c9d1d9; }
-    .protocol-tag { background:#2ea043; color:#fff; padding:3px 12px;
-                    border-radius:12px; font-size:0.8rem; font-weight:700; }
-
-    /* ── Tabs ── */
-    .stTabs [data-baseweb="tab-list"] { background:#161b22; }
-    .stTabs [data-baseweb="tab"]      { color:#8b949e; }
-    .stTabs [aria-selected="true"]    { color:#f0f6fc !important; }
-
-    /* ── Dividers ── */
+        background:linear-gradient(135deg,#c0392b,#e74c3c); color:white;
+        border:none; border-radius:6px; padding:0.6rem 2rem; font-weight:700; }
+    .badge-high   { background:#c0392b; color:#fff; padding:4px 14px; border-radius:20px; font-weight:700; }
+    .badge-medium { background:#d68910; color:#fff; padding:4px 14px; border-radius:20px; font-weight:700; }
+    .badge-low    { background:#1e8449; color:#fff; padding:4px 14px; border-radius:20px; font-weight:700; }
+    .tag-free     { background:#1f6feb; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.72rem; font-weight:700; }
+    .tag-paid     { background:#6e7681; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.72rem; }
+    .alert-high   { background:#161b22; border-left:4px solid #e74c3c; padding:1rem; border-radius:6px; margin:0.8rem 0; }
+    .alert-medium { background:#161b22; border-left:4px solid #d68910; padding:1rem; border-radius:6px; margin:0.8rem 0; }
+    .alert-low    { background:#161b22; border-left:4px solid #1e8449; padding:1rem; border-radius:6px; margin:0.8rem 0; }
+    .info-card    { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:1rem; margin:0.4rem 0; }
+    .field-label  { color:#8b949e; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; }
+    .field-value  { color:#f0f6fc; font-size:0.95rem; }
+    .sop-panel    { background:#0d1f12; border:1px solid #2ea043; border-radius:8px;
+                    padding:1.2rem; font-size:0.85rem; font-family:'Courier New',monospace; }
+    .cost-row     { display:flex; gap:8px; align-items:center; margin:2px 0; font-size:0.85rem; }
     hr { border-color:#30363d; }
-
-    /* ── History items ── */
-    .history-item { background:#161b22; border:1px solid #30363d; border-radius:6px;
-                    padding:0.6rem 1rem; margin:0.3rem 0; font-size:0.85rem;
-                    cursor:pointer; }
 </style>
 """, unsafe_allow_html=True)
 
 
-# ── Helper Functions ───────────────────────────────────────────────────────────
+# -- Provider metadata --------------------------------------------------------
 
-def get_threat_badge(level: str) -> str:
-    css = {"High": "badge-high", "Medium": "badge-medium", "Low": "badge-low"}.get(level, "badge-low")
-    return f'<span class="{css}">⬤ {level.upper()}</span>'
+PROVIDER_META = {
+    "groq": {
+        "label":       "Groq",
+        "tag":         "FREE",
+        "tag_class":   "tag-free",
+        "model":       "llama-3.3-70b-versatile",
+        "env_key":     "GROQ_API_KEY",
+        "key_prefix":  "gsk_",
+        "help":        "Free key at console.groq.com",
+        "note":        "~500 tok/s | Llama 3.3 70B",
+    },
+    "openai": {
+        "label":       "OpenAI",
+        "tag":         "PAID",
+        "tag_class":   "tag-paid",
+        "model":       "gpt-4o-mini",
+        "env_key":     "OPENAI_API_KEY",
+        "key_prefix":  "sk-",
+        "help":        "platform.openai.com/api-keys",
+        "note":        "GPT-4o-mini | best accuracy",
+    },
+    "huggingface": {
+        "label":       "Hugging Face",
+        "tag":         "FREE",
+        "tag_class":   "tag-free",
+        "model":       "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "env_key":     "HUGGINGFACE_API_KEY",
+        "key_prefix":  "hf_",
+        "help":        "huggingface.co/settings/tokens",
+        "note":        "Llama 3.1 8B | GitHub Student Pack",
+    },
+}
 
-def get_alert_class(level: str) -> str:
-    return {"High": "alert-box", "Medium": "alert-box-medium", "Low": "alert-box-low"}.get(level, "alert-box-low")
+
+# -- Helpers ------------------------------------------------------------------
+
+def badge(level: str) -> str:
+    c = {"High": "badge-high", "Medium": "badge-medium", "Low": "badge-low"}.get(level, "badge-low")
+    return f'<span class="{c}"> {level.upper()}</span>'
+
+def alert_div(level: str, msg: str) -> str:
+    c = {"High": "alert-high", "Medium": "alert-medium", "Low": "alert-low"}.get(level, "alert-low")
+    return f'<div class="{c}"><b>AI Directive:</b><br><br>{msg}</div>'
 
 def ts() -> str:
     return datetime.now().strftime("%H:%M:%S")
 
+
 @st.cache_resource(show_spinner=False)
-def get_agent(openai_key: str):
-    """Cache the agent so it initialises only once per session."""
-    from src.agent import IncidentAgent
+def get_agent(provider_name: str, api_key: str, embed_mode: str, embed_key: str = ""):
+    """
+    Cache key = (provider_name, api_key, embed_mode, embed_key).
+    sop_file_path intentionally omitted -- SOPRetriever auto-resolves it
+    via _resolve_sop_path() anchored to rag_pipeline.py, reliable on
+    local dev, Streamlit Cloud, and Docker.
+    """
+    from src.providers import get_provider
     from src.rag_pipeline import SOPRetriever
-    sop_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "sop_manual.txt")
-    retriever = SOPRetriever(sop_path, openai_key)
-    return IncidentAgent(openai_key, retriever)
+    from src.agent import IncidentAgent
 
-def call_agent_direct(guard_input: str, guard_name: str, openai_key: str) -> dict:
-    """Call the agent directly (no FastAPI hop)."""
-    agent = get_agent(openai_key)
-    return agent.process(guard_input, guard_name)
-
-def call_api(guard_input: str, guard_name: str, api_url: str) -> dict:
-    """Call the FastAPI backend."""
-    response = httpx.post(
-        f"{api_url}/report",
-        json={"guard_input": guard_input, "guard_name": guard_name},
-        timeout=60.0
-    )
-    response.raise_for_status()
-    return response.json()["data"]
+    provider = get_provider(provider_name, api_key)
+    os.environ["EMBEDDING_MODE"] = embed_mode
+    retriever = SOPRetriever(openai_api_key=embed_key)   # path auto-resolved
+    return IncidentAgent(sop_retriever=retriever, provider=provider)
 
 
-# ── Session State ─────────────────────────────────────────────────────────────
+# -- Session state ------------------------------------------------------------
 if "history" not in st.session_state:
-    st.session_state.history = []   # list of past results
+    st.session_state.history = []
 if "result"  not in st.session_state:
-    st.session_state.result = None
+    st.session_state.result  = None
 
 
-# ── Sidebar ───────────────────────────────────────────────────────────────────
+# -- Sidebar ------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("## 🛡️ AP Securitas")
+    st.markdown("## AP Securitas")
     st.markdown("**AI-Powered SOC Operations**")
     st.markdown("---")
 
-    # Credentials
-    st.markdown("### ⚙️ Configuration")
-    openai_key = st.text_input(
-        "OpenAI API Key",
-        type="password",
-        value=os.getenv("OPENAI_API_KEY", ""),
-        help="Your OpenAI API key. Set OPENAI_API_KEY in .env to pre-fill."
-    )
+    # -- LLM Provider ---------------------------------------------------------
+    st.markdown("### LLM Provider")
 
-    mode = st.radio(
-        "Mode",
-        ["Direct (no server)", "FastAPI Backend"],
+    provider_options = list(PROVIDER_META.keys())
+    provider_labels  = [
+        f"{PROVIDER_META[p]['label']}  [{PROVIDER_META[p]['tag']}]"
+        for p in provider_options
+    ]
+    selected_idx     = st.radio(
+        "provider_radio",
+        range(len(provider_options)),
+        format_func=lambda i: provider_labels[i],
         index=0,
-        help="Direct: agent runs inside Streamlit. FastAPI: calls backend server."
+        label_visibility="collapsed"
+    )
+    provider_name = provider_options[selected_idx]
+    meta          = PROVIDER_META[provider_name]
+
+    st.caption(meta["note"])
+
+    llm_api_key = st.text_input(
+        f"{meta['label']} API Key  ({meta['key_prefix']}...)",
+        type="password",
+        value=os.getenv(meta["env_key"], ""),
+        help=meta["help"]
     )
 
-    api_url = "http://localhost:8000"
-    if mode == "FastAPI Backend":
-        api_url = st.text_input("Backend URL", value="http://localhost:8000")
+    st.markdown("---")
+
+    # -- Embedding mode -------------------------------------------------------
+    st.markdown("### Embeddings")
+
+    embed_options = ["Local (Free)", "OpenAI API"]
+    embed_choice  = st.radio(
+        "embed_radio",
+        embed_options,
+        index=0,
+        label_visibility="collapsed"
+    )
+    embed_mode = "local" if embed_choice == "Local (Free)" else "openai"
+
+    embed_key = ""
+    if embed_mode == "local":
+        st.caption("all-MiniLM-L6-v2  |  runs on CPU  |  $0")
+    else:
+        st.caption("text-embedding-3-small  |  high quality")
+        embed_key = st.text_input(
+            "OpenAI Key for embeddings",
+            type="password",
+            value=os.getenv("OPENAI_API_KEY", "")
+        )
 
     st.markdown("---")
 
-    # Status
-    st.markdown("### 📡 System Status")
-    if openai_key:
-        st.markdown("🟢 **API Key** Configured")
-    else:
-        st.markdown("🔴 **API Key** Missing")
-    st.markdown(f"🟢 **Mode** {mode}")
-    st.markdown(f"🟢 **Time** {datetime.now().strftime('%d %b %Y %H:%M')}")
+    # -- Live cost display ----------------------------------------------------
+    st.markdown("### Cost per query")
+    llm_free  = meta["tag"] == "FREE"
+    emb_free  = (embed_mode == "local")
+    all_free  = llm_free and emb_free
+
+    llm_cost  = "$0.00  FREE" if llm_free else "~$0.0002"
+    emb_cost  = "$0.00  FREE" if emb_free else "~$0.00002"
+
+    st.markdown(f"LLM:        `{llm_cost}`")
+    st.markdown(f"Embeddings: `{emb_cost}`")
+    if all_free:
+        st.success("Zero-cost mode active")
 
     st.markdown("---")
 
-    # Incident history
-    st.markdown("### 📋 Recent Reports")
-    if not st.session_state.history:
-        st.caption("No incidents logged yet.")
-    else:
-        for i, h in enumerate(reversed(st.session_state.history[-5:])):
-            level = h.get("incident_report", {}).get("threat_level", "Low")
-            icon  = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(level, "⚪")
-            loc   = h.get("incident_report", {}).get("location", "Unknown")[:20]
-            t     = h.get("_ts", "")
-            st.markdown(
-                f'<div class="history-item">{icon} [{t}] {loc}</div>',
-                unsafe_allow_html=True
-            )
+    # -- Status ---------------------------------------------------------------
+    st.markdown("### Status")
+    key_ok = bool(llm_api_key)
+    st.markdown(f"{'Key' if key_ok else 'Key MISSING'}: {'set' if key_ok else 'not set'}")
+    st.markdown(f"Reports today: {len(st.session_state.history)}")
 
+    # -- History --------------------------------------------------------------
     if st.session_state.history:
-        if st.button("🗑️ Clear History", use_container_width=True):
+        st.markdown("---")
+        st.markdown("### Recent")
+        for h in reversed(st.session_state.history[-5:]):
+            lvl  = h.get("incident_report", {}).get("threat_level", "Low")
+            icon = {"High": "🔴", "Medium": "🟡", "Low": "🟢"}.get(lvl, "")
+            loc  = h.get("incident_report", {}).get("location", "")[:18]
+            st.markdown(f"{icon} [{h.get('_ts','')}] {loc}")
+
+        if st.button("Clear history", use_container_width=True):
             st.session_state.history = []
             st.session_state.result  = None
             st.rerun()
 
 
-# ── Main Area ─────────────────────────────────────────────────────────────────
-st.markdown("# 🚨 AP Securitas — Intelligent Incident Logger")
-st.markdown(
-    "AI-powered triage: enter any guard report → get structured data + SOP action steps instantly.",
-    help="Supports English, Marathi, Hindi, or any mix."
-)
+# -- Main area ----------------------------------------------------------------
+st.markdown("# AP Securitas -- AI Incident Logger")
+st.markdown("Natural language guard report -> Structured data + SOP action steps.")
 st.markdown("---")
 
-# ── Input Form ────────────────────────────────────────────────────────────────
-col1, col2 = st.columns([3, 1])
-with col1:
-    guard_name  = st.text_input(
-        "👤 Guard Name / ID",
-        placeholder="e.g., Guard Ramesh Kumar — Post: Gate 2"
-    )
-with col2:
+c1, c2, c3 = st.columns([3, 1, 1])
+with c1:
+    guard_name = st.text_input("Guard Name / ID", placeholder="e.g., Guard Ramesh Kumar -- Post: Gate 2")
+with c2:
     st.markdown("<br>", unsafe_allow_html=True)
-    st.metric("Reports Today", len(st.session_state.history))
+    st.metric("Provider", meta["label"])
+with c3:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.metric("Model", meta["model"].split("/")[-1][:16])
 
 incident_input = st.text_area(
-    "📋 Incident Report (Natural Language)",
+    "Incident Report  (English / Marathi / Hindi / mix)",
     placeholder=(
-        "Describe the incident in your own words — English, Marathi, Hindi, or mix.\n\n"
-        "Example: Gate 2 par ek suspicious black backpack mili hai jo pichhle 20 minute se koi "
-        "nahi le gaya. Bag ek pillar ke paas rakhi hai. Maine kisi ko nahi jaane diya. "
-        "Kya karna chahiye?"
+        "Example: Gate 2 par ek suspicious black backpack mili hai jo pichhle 20 minute se\n"
+        "koi nahi le gaya. Bag ek pillar ke paas rakhi hai. Maine kisi ko paas nahi jaane\n"
+        "diya. Kya karna chahiye?"
     ),
-    height=140,
-    label_visibility="visible"
+    height=140
 )
 
-# ── Sample Inputs ─────────────────────────────────────────────────────────────
-with st.expander("💡 Try Sample Reports"):
+with st.expander("Try sample inputs"):
     samples = {
-        "🔴 Suspicious Bag":     "Gate No. 2 ke paas ek abandoned black bag rakhi hai approximately 25 minutes se. Koi malik nahi dikha. Bag se halki si tikhi smell aa rahi hai.",
-        "🔴 Fire / Smoke":       "Block B server room mein smoke detect ho raha hai. Fire alarm baj raha hai. Evacuation start karni chahiye?",
-        "🟡 Suspicious Person":  "Parking lot mein ek unknown male lagbhag 45 minutes se ghoom raha hai. Wo vehicles ke paas ruk ruk ke dekh raha hai. Uske paas koi ID nahi hai.",
-        "🟢 Lost Property":      "Ek visitor ka wallet main lobby mein mila hai. Visitor already chale gaye hain. Name card tha wallet mein."
+        "HIGH -- Suspicious bag":      "Gate No. 2 ke paas ek abandoned black bag rakhi hai 25 minutes se. Bag se tikhi smell aa rahi hai.",
+        "HIGH -- Fire in server room":  "Block B server room mein smoke alarm baj raha hai. Halka dhuan dikh raha hai.",
+        "MEDIUM -- Unknown person":     "Parking lot mein ek unknown male 45 minutes se ghoom raha hai near vehicles. Koi ID nahi hai.",
+        "LOW -- Lost wallet":           "Main lobby mein ek wallet mila. Visiting card tha andar -- Rajesh Sharma, ABC Tech.",
     }
-    for label, text in samples.items():
-        if st.button(label, use_container_width=True):
-            st.session_state["_sample"] = text
+    for lbl, txt in samples.items():
+        if st.button(lbl, use_container_width=True):
+            st.session_state["_sample"] = txt
 
-# Pre-fill with sample if clicked
 if "_sample" in st.session_state:
     incident_input = st.session_state.pop("_sample")
 
 st.markdown("---")
-
-# ── Submit ────────────────────────────────────────────────────────────────────
-submit = st.button("🔍 Analyse Incident", type="primary", use_container_width=False)
+submit = st.button("Analyse Incident", type="primary")
 
 if submit:
-    if not openai_key:
-        st.error("⚠️ Please enter your OpenAI API Key in the sidebar.")
+    if not llm_api_key:
+        st.error(f"Please enter your {meta['label']} API key. ({meta['help']})")
     elif not incident_input.strip():
-        st.warning("📝 Please enter an incident report above.")
+        st.warning("Please enter an incident report.")
     else:
-        with st.spinner("🤖 AI Agent processing incident..."):
+        with st.spinner(f"Processing via {meta['label']} ({meta['model'].split('/')[-1]})..."):
             try:
-                if mode == "Direct (no server)":
-                    result = call_agent_direct(incident_input, guard_name or "Unknown Guard", openai_key)
-                else:
-                    result = call_api(incident_input, guard_name or "Unknown Guard", api_url)
-
+                agent  = get_agent(provider_name, llm_api_key, embed_mode, embed_key)
+                result = agent.process(incident_input, guard_name or "Unknown Guard")
                 result["_ts"] = ts()
                 st.session_state.result  = result
                 st.session_state.history.append(result)
-
             except Exception as e:
-                st.error(f"❌ Agent error: {e}")
+                st.error(f"Agent error: {e}")
                 st.session_state.result = None
 
 
-# ── Results Display ───────────────────────────────────────────────────────────
+# -- Results ------------------------------------------------------------------
 result = st.session_state.result
 if result:
     report       = result.get("incident_report", {})
     sop_action   = result.get("sop_action")
-    alert_msg    = result.get("alert_message", "No alert generated.")
-    immediate    = result.get("requires_immediate_action", False)
+    alert_msg    = result.get("alert_message", "")
     protocol_num = result.get("protocol_number")
     threat_level = report.get("threat_level", "Low")
+    confidence   = report.get("confidence_score", 0.0)
+    model_used   = result.get("llm_model", "unknown")
+    prov_used    = result.get("llm_provider", "unknown")
 
-    st.markdown("## 📊 Analysis Results")
+    st.markdown("## Results")
 
-    # ── Header row: threat level + protocol tag ──
-    header_col1, header_col2, header_col3 = st.columns([2, 2, 3])
-    with header_col1:
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
         st.markdown("**Threat Level**")
-        st.markdown(get_threat_badge(threat_level), unsafe_allow_html=True)
-    with header_col2:
+        st.markdown(badge(threat_level), unsafe_allow_html=True)
+    with col2:
         st.markdown("**Protocol**")
-        if protocol_num:
-            st.markdown(f'<span class="protocol-tag">📋 {protocol_num}</span>', unsafe_allow_html=True)
-        else:
-            st.markdown("—")
-    with header_col3:
-        st.markdown("**Immediate Action Required**")
-        st.markdown("🔴 **YES — Escalate Now**" if immediate else "🟡 Standard Response")
+        st.markdown(f"`{protocol_num}`" if protocol_num else "--")
+    with col3:
+        st.markdown("**Immediate Action**")
+        st.markdown("YES" if result.get("requires_immediate_action") else "Standard")
+    with col4:
+        st.markdown("**Confidence / Provider**")
+        st.markdown(f"`{confidence:.0%}` via `{prov_used}`")
 
     st.markdown("---")
-
-    # ── Main tabs ──
-    tab1, tab2, tab3 = st.tabs(["📝 Incident Report", "📋 SOP Action Steps", "{ } Raw JSON"])
+    tab1, tab2, tab3 = st.tabs(["Incident Report", "SOP Action Steps", "{ } Raw JSON"])
 
     with tab1:
-        # Alert message at the top
-        st.markdown(
-            f'<div class="{get_alert_class(threat_level)}">'
-            f'<b>🤖 AI Directive for Guard:</b><br><br>{alert_msg}</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown(alert_div(threat_level, alert_msg), unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-
-        # Structured report as clean field cards
         fields = [
-            ("📍 Location",          report.get("location",        "—")),
-            ("🎯 Object / Person",   report.get("object_involved", "—")),
-            ("📄 Summary",           report.get("summary",         "—")),
-            ("👤 Reported By",       report.get("reported_by",     "Unknown Guard")),
-            ("🕐 Incident Time",     report.get("incident_time",   "Not specified")),
-            ("⚡ Action Taken",      report.get("action_taken",    "None taken yet")),
+            ("Location",      report.get("location",        "--")),
+            ("Object/Person", report.get("object_involved", "--")),
+            ("Summary",       report.get("summary",         "--")),
+            ("Reported By",   report.get("reported_by",     "--")),
+            ("Incident Time", report.get("incident_time",   "Not specified")),
+            ("Action Taken",  report.get("action_taken",    "None yet")),
         ]
-
-        c1, c2 = st.columns(2)
-        for i, (label, value) in enumerate(fields):
-            with (c1 if i % 2 == 0 else c2):
+        ca, cb = st.columns(2)
+        for i, (lbl, val) in enumerate(fields):
+            with (ca if i % 2 == 0 else cb):
                 st.markdown(
                     f'<div class="info-card">'
-                    f'<div class="field-label">{label}</div>'
-                    f'<div class="field-value">{value}</div>'
-                    f'</div>',
+                    f'<div class="field-label">{lbl}</div>'
+                    f'<div class="field-value">{val}</div></div>',
                     unsafe_allow_html=True
                 )
 
     with tab2:
         if sop_action:
-            st.markdown(f'<span class="protocol-tag">📋 {protocol_num or "SOP Match"}</span>',
-                        unsafe_allow_html=True)
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"**{protocol_num or 'SOP Match'}**")
             st.markdown(
                 f'<div class="sop-panel">{sop_action.replace(chr(10), "<br>")}</div>',
                 unsafe_allow_html=True
             )
         else:
-            st.info(
-                "ℹ️ No SOP retrieval was triggered for this incident.\n\n"
-                "SOP lookup runs automatically for HIGH-threat incidents.\n"
-                f"This incident was classified as **{threat_level}** threat level."
-            )
+            st.info(f"SOP retrieval runs for HIGH and MEDIUM threats. This was **{threat_level}**.")
 
     with tab3:
-        # Clean JSON export view
-        clean = {k: v for k, v in result.items() if not k.startswith("_")}
+        clean    = {k: v for k, v in result.items() if not k.startswith("_")}
         json_str = json.dumps(clean, indent=2, ensure_ascii=False)
         st.code(json_str, language="json")
         st.download_button(
-            "⬇️ Download JSON Report",
+            "Download JSON",
             data=json_str,
             file_name=f"incident_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
             mime="application/json"
         )
 
-
-# ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown(
-    "<div style='text-align:center; color:#8b949e; font-size:0.8rem;'>"
-    "AP Securitas Pvt. Ltd. &nbsp;|&nbsp; AI-Augmented SOC Operations &nbsp;|&nbsp; "
-    "Godrej IT Park, Thane &nbsp;|&nbsp; Built by Pramod Jadhav"
-    "</div>",
+    "<div style='text-align:center;color:#8b949e;font-size:0.78rem'>"
+    "AP Securitas Pvt. Ltd.  |  AI-Augmented SOC  |  Godrej IT Park, Thane  |  "
+    "Built by Pramod Jadhav</div>",
     unsafe_allow_html=True
-)
+    )
